@@ -27,8 +27,12 @@ def upload_to_gcs(bucket_name, data, destination_blob_name):
         "client_x509_cert_url": os.getenv("client_x509_cert_url")
     }
 
-    # Create a client instance with the specified credentials
-    client = storage.Client(credentials=credentials_dict)
+    # IMPORTANT: Convert the credentials dictionary to a credentials object
+    from google.oauth2.service_account import Credentials
+    credentials = Credentials.from_service_account_info(credentials_dict)
+
+    # Create a client instance with the specified credentials and project ID
+    client = storage.Client(credentials=credentials, project=credentials_dict["project_id"])
     bucket = client.bucket(bucket_name)
     blob = bucket.blob(destination_blob_name)
     blob.upload_from_string(data)
