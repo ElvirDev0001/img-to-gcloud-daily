@@ -6,3 +6,4 @@ __pycache__/
 .env
 .idea
 venv/
+starlit-granite-415310-*.json
