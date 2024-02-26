@@ -19,7 +19,7 @@ def upload_to_gcs(bucket_name, data, destination_blob_name):
 
 def main():
     image_url = "http://sosrff.tsu.ru/srimage1/shm.jpg"
-    bucket_name = "your-bucket-name"  # Change this to your bucket name
+    bucket_name = "bucketforimages666"  # Change this to your bucket name
     file_name = datetime.now().strftime("%d%m%y.jpg")
 
     image_data = download_image(image_url)
