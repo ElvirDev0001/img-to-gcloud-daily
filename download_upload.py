@@ -3,6 +3,7 @@ import time
 from datetime import datetime, timedelta
 from google.cloud import storage
 import schedule
+import os
 
 def download_image(url):
     response = requests.get(url)
@@ -12,7 +13,22 @@ def download_image(url):
         raise Exception(f"Failed to download image from {url}")
 
 def upload_to_gcs(bucket_name, data, destination_blob_name):
-    client = storage.Client()
+    # Construct the credentials dictionary from environment variables
+    credentials_dict = {
+        "type": os.getenv("type"),
+        "project_id": os.getenv("project_id"),
+        "private_key_id": os.getenv("private_key_id"),
+        "private_key": os.getenv("private_key").replace('\\n', '\n'),
+        "client_email": os.getenv("client_email"),
+        "client_id": os.getenv("client_id"),
+        "auth_uri": os.getenv("auth_uri"),
+        "token_uri": os.getenv("token_uri"),
+        "auth_provider_x509_cert_url": os.getenv("auth_provider_x509_cert_url"),
+        "client_x509_cert_url": os.getenv("client_x509_cert_url")
+    }
+
+    # Create a client instance with the specified credentials
+    client = storage.Client(credentials=credentials_dict)
     bucket = client.bucket(bucket_name)
     blob = bucket.blob(destination_blob_name)
     blob.upload_from_string(data)
@@ -42,7 +58,7 @@ def wait_until_time(target_hour=17, target_minute=0, timezone_offset=0):
     time.sleep(wait_seconds)
 
 def main():
-    wait_until_time()  # Wait until the target time (6 PM UTC+1)
+    #wait_until_time()  # Wait until the target time (6 PM UTC+1)
     scheduled_job()  # Run the scheduled job
 
 if __name__ == "__main__":
