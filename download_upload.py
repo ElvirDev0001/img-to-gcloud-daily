@@ -1,8 +1,8 @@
 import requests
-import time
-from datetime import datetime, timedelta
+from datetime import datetime
 from google.cloud import storage
 import schedule
+import time
 import os
 
 def download_image(url):
@@ -27,7 +27,7 @@ def upload_to_gcs(bucket_name, data, destination_blob_name):
         "client_x509_cert_url": os.getenv("client_x509_cert_url")
     }
 
-    # IMPORTANT: Convert the credentials dictionary to a credentials object
+    # Convert the credentials dictionary to a credentials object
     from google.oauth2.service_account import Credentials
     credentials = Credentials.from_service_account_info(credentials_dict)
 
@@ -42,28 +42,17 @@ def upload_to_gcs(bucket_name, data, destination_blob_name):
 def scheduled_job():
     image_url = "http://sosrff.tsu.ru/srimage1/shm.jpg"
     bucket_name = "bucketforimages666"  # Change this to your bucket name
-    file_name = datetime.now().strftime("schuman/%d%m%y.jpg")  # Prefix with 'schuman/' to save in the schuman folder
+    file_name = datetime.utcnow().strftime("schuman/%d%m%y.jpg")  # Keeping format as ddmmyy
 
     image_data = download_image(image_url)
     upload_to_gcs(bucket_name, image_data, file_name)
 
-def wait_until_time(target_hour=17, target_minute=0, timezone_offset=0):
-    # Adjust target hour based on timezone offset
-    target_hour -= timezone_offset
-    # Get current time
-    now = datetime.utcnow()
-    # Calculate target datetime for today
-    target_time = datetime(now.year, now.month, now.day, target_hour, target_minute)
-    # If we're past the target time, schedule for the next day
-    if now > target_time:
-        target_time += timedelta(days=1)
-    # Calculate how long to wait and delay execution
-    wait_seconds = (target_time - now).total_seconds()
-    time.sleep(wait_seconds)
+def run_scheduled_jobs():
+    schedule.every().day.at("17:00").do(scheduled_job)
 
-def main():
-    #wait_until_time()  # Wait until the target time (6 PM UTC+1)
-    scheduled_job()  # Run the scheduled job
+    while True:
+        schedule.run_pending()
+        time.sleep(60)  # Wait for 1 minute between checks
 
 if __name__ == "__main__":
-    main()
+    run_scheduled_jobs()
